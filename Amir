@@ -148,7 +148,7 @@
   "policy" : {
 
   },
-  "remarks" : “AMIR DE 🌍",
+  "remarks" : “AMIR",
   "routing" : {
     "domainStrategy" : "IPIfNonMatch",
     "rules" : [
