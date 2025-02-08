@@ -1,7 +1,203 @@
-vless://df0680ca-e43c-498d-ed86-8e196eedd012@37.27.249.94:8880?type=grpc&mode=gun&security=none#Amir%20%7C%20Finland%20%F0%9F%87%AB%F0%9F%87%AE
+{
+  "dns" : {
+    "hosts" : {
+      "geosite:category-ads-all" : [
+        "127.0.0.1"
+      ],
+      "geosite:category-ads-ir" : [
+        "127.0.0.1"
+      ]
+    },
+    "queryStrategy" : "UseIP",
+    "servers" : [
+      "https:\/\/8.8.8.8\/dns-query",
+      {
+        "address" : "8.8.8.8",
+        "domains" : [
+          "full:ads.amirpro.ir"
+        ],
+        "skipFallback" : true
+      },
+      {
+        "address" : "8.8.8.8",
+        "domains" : [
+          "geosite:category-ir"
+        ],
+        "expectIPs" : [
+          "geoip:ir"
+        ],
+        "skipFallback" : true
+      }
+    ],
+    "tag" : "dns"
+  },
+  "fakedns" : [
+    {
+      "ipPool" : "198.20.0.0\/15",
+      "poolSize" : 512
+    },
+    {
+      "ipPool" : "fc00::\/64",
+      "poolSize" : 512
+    }
+  ],
+  "inbounds" : [
+    {
+      "listen" : "127.0.0.1",
+      "port" : 1080,
+      "protocol" : "socks",
+      "settings" : {
+        "auth" : "noauth",
+        "udp" : true
+      },
+      "sniffing" : {
+        "destOverride" : [
+          "http",
+          "tls",
+          "quic",
+          "fakedns"
+        ],
+        "enabled" : true,
+        "routeOnly" : true
+      },
+      "tag" : "socks"
+    }
+  ],
+  "log" : {
+    "loglevel" : "warning"
+  },
+  "outbounds" : [
+    {
+      "protocol" : "vless",
+      "settings" : {
+        "vnext" : [
+          {
+            "address" : "ads.amirpro.ir",
+            "port" : 2053,
+            "users" : [
+              {
+                "encryption" : "none",
+                "id" : "7d29b7b5-5473-4943-862f-a955cbc1a288",
+                "level" : 8
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings" : {
+        "network" : "ws",
+        "security" : "tls",
+        "sockopt" : {
+          "domainStrategy" : "UseIPv4v6",
+          "tcpKeepAliveIdle" : 30
+        },
+        "tlsSettings" : {
+          "allowInsecure" : true,
+          "alpn" : [
+            "h2",
+            "http\/1.1"
+          ],
+          "fingerprint" : "chrome",
+          "serverName" : "ads.amirpro.ir"
+        },
+        "wsSettings" : {
+          "headers" : {
+            "User-Agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/127.0.0.0 Safari\/537.36"
+          },
+          "host" : "ads.amirpro.ir",
+          "path" : "\/c2bKgmcU31bGc5Of?ed=2560"
+        }
+      },
+      "tag" : "proxy"
+    },
+    {
+      "protocol" : "dns",
+      "tag" : "dns-out"
+    },
+    {
+      "protocol" : "freedom",
+      "settings" : {
 
-vless://df0680ca-e43c-498d-ed86-8e196eedd012@95.216.166.80:8880?type=grpc&mode=gun&security=none#Amir%20%7C%20Finland%202%20%F0%9F%87%AB%F0%9F%87%AE
+      },
+      "tag" : "direct"
+    },
+    {
+      "protocol" : "blackhole",
+      "settings" : {
+        "response" : {
+          "type" : "http"
+        }
+      },
+      "tag" : "block"
+    }
+  ],
+  "policy" : {
 
-vless://c6f6bfb3-f9c7-46ba-8656-91d7c76cbade@5.75.169.154:4810?type=tcp&security=none#Amir%20%7C%20Germany%20%F0%9F%87%A9%F0%9F%87%AA
-
-vless://3602c1ed-5506-4d78-a0be-f39a7594e888@49.12.222.117:57818?type=ws&path=/#Amir%20%7C%20Germany%202%20%F0%9F%87%A9%F0%9F%87%AA
+  },
+  "remarks" : "Load Balancing ⚡️",
+  "routing" : {
+    "domainStrategy" : "IPIfNonMatch",
+    "rules" : [
+      {
+        "inboundTag" : [
+          "dns-in"
+        ],
+        "outboundTag" : "dns-out",
+        "type" : "field"
+      },
+      {
+        "inboundTag" : [
+          "socks-in",
+          "http-in"
+        ],
+        "outboundTag" : "dns-out",
+        "port" : "53",
+        "type" : "field"
+      },
+      {
+        "ip" : [
+          "8.8.8.8"
+        ],
+        "network" : "udp",
+        "outboundTag" : "direct",
+        "port" : "53",
+        "type" : "field"
+      },
+      {
+        "domain" : [
+          "geosite:private",
+          "geosite:category-ir"
+        ],
+        "outboundTag" : "direct",
+        "type" : "field"
+      },
+      {
+        "ip" : [
+          "geoip:private",
+          "geoip:ir"
+        ],
+        "outboundTag" : "direct",
+        "type" : "field"
+      },
+      {
+        "domain" : [
+          "geosite:category-ads-all",
+          "geosite:category-ads-ir"
+        ],
+        "outboundTag" : "block",
+        "type" : "field"
+      },
+      {
+        "network" : "udp",
+        "outboundTag" : "block",
+        "port" : "443",
+        "type" : "field"
+      },
+      {
+        "network" : "tcp,udp",
+        "outboundTag" : "proxy",
+        "type" : "field"
+      }
+    ]
+  }
+}
